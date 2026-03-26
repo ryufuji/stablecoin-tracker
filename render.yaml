@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: stablecoin-tracker
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn web:app --bind 0.0.0.0:$PORT
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: SLACK_WEBHOOK_URL
+        sync: false
+      - key: PYTHON_VERSION
+        value: 3.11.0

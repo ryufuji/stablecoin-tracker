@@ -1,0 +1,31 @@
+rss_feeds:
+  # 海外メディア
+  - name: CoinDesk
+    url: https://www.coindesk.com/arc/outboundfeeds/rss/
+  - name: The Block
+    url: https://www.theblock.co/rss.xml
+  - name: Decrypt
+    url: https://decrypt.co/feed
+  - name: DL News
+    url: https://www.dlnews.com/rss/
+  - name: Bankless
+    url: https://www.bankless.com/rss
+  # 日本メディア
+  - name: CoinPost
+    url: https://coinpost.jp/?feed=rss2
+  - name: CoinDesk Japan
+    url: https://www.coindeskjapan.com/feed/
+  - name: あたらしい経済
+    url: https://www.neweconomy.jp/feed
+
+coingecko:
+  coins: [tether, usd-coin, dai, usd0]
+  peg_threshold: 0.005  # 0.5%
+
+ai:
+  model: claude-haiku-4-5-20251001
+  max_tokens_per_article: 1000
+
+obsidian:
+  export_min_importance: 4
+  export_dir: exports/

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}ナレッジベース - Stablecoin Tracker{% endblock %}
+
+{% block content %}
+<h1>ナレッジベース</h1>
+<p class="text-muted mb-3">ステーブルコインの基礎から未来まで、体系的に学べるラーニングハブ</p>
+
+<div class="kb-sections">
+    {% for section in sections %}
+    <div class="card mb-2">
+        <div class="card-body">
+            <h2 class="kb-section-title">
+                <span class="kb-icon">{{ section.icon }}</span>
+                {{ section.title }}
+            </h2>
+            <div class="kb-chapters">
+                {% for chapter in section.chapters %}
+                <a href="/knowledge/{{ section.id }}/{{ chapter.id }}" class="kb-chapter-link">
+                    <span class="kb-chapter-num">{{ loop.index }}</span>
+                    <span class="kb-chapter-title">{{ chapter.title }}</span>
+                    <span class="kb-arrow">→</span>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

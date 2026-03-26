@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}検索 - Stablecoin Tracker{% endblock %}
+
+{% block content %}
+<h1>検索</h1>
+
+<form class="filter-form" method="GET" action="/search">
+    <div class="form-group">
+        <label for="keyword">キーワード</label>
+        <input type="text" name="keyword" id="keyword" value="{{ request.args.get('keyword', '') }}" required placeholder="検索キーワードを入力">
+    </div>
+    <div class="form-group">
+        <label for="category">カテゴリ</label>
+        <select name="category" id="category">
+            <option value="" {% if request.args.get('category', '') == '' %}selected{% endif %}>すべて</option>
+            <option value="規制" {% if request.args.get('category') == '規制' %}selected{% endif %}>規制</option>
+            <option value="技術" {% if request.args.get('category') == '技術' %}selected{% endif %}>技術</option>
+            <option value="市場" {% if request.args.get('category') == '市場' %}selected{% endif %}>市場</option>
+            <option value="DeFi" {% if request.args.get('category') == 'DeFi' %}selected{% endif %}>DeFi</option>
+            <option value="事件" {% if request.args.get('category') == '事件' %}selected{% endif %}>事件</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="project">プロジェクト</label>
+        <input type="text" name="project" id="project" value="{{ request.args.get('project', '') }}" placeholder="例: USDT, USDC">
+    </div>
+    <div class="form-group">
+        <label for="days">期間</label>
+        <select name="days" id="days">
+            <option value="7" {% if request.args.get('days', '7') == '7' %}selected{% endif %}>7日</option>
+            <option value="30" {% if request.args.get('days') == '30' %}selected{% endif %}>30日</option>
+            <option value="90" {% if request.args.get('days') == '90' %}selected{% endif %}>90日</option>
+            <option value="" {% if request.args.get('days') == '' %}selected{% endif %}>全期間</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn">検索</button>
+    </div>
+</form>
+
+{% if keyword %}
+<p class="result-count">{{ results|length }}件の結果</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>日付</th>
+            <th>ソース</th>
+            <th>カテゴリ</th>
+            <th>重要度</th>
+            <th>タイトル</th>
+            <th>要約</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for article in results %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ article.published_at[:10] if article.published_at else '-' }}</td>
+            <td>{{ article.source }}</td>
+            <td>{{ article.category or '-' }}</td>
+            <td>
+                {% if article.importance %}
+                <span class="badge {% if article.importance >= 4 %}badge-danger{% elif article.importance >= 3 %}badge-warning{% else %}badge-success{% endif %}">
+                    {{ article.importance }}
+                </span>
+                {% else %}-{% endif %}
+            </td>
+            <td><a href="{{ article.url }}" target="_blank" rel="noopener noreferrer">{{ article.title }}</a></td>
+            <td class="summary-cell">{{ article.summary_ja or '' }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% endblock %}

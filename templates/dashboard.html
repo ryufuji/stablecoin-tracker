@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}ダッシュボード - Stablecoin Tracker{% endblock %}
+
+{% block content %}
+<h1>ダッシュボード</h1>
+
+<section class="section">
+    <h2>ステーブルコイン価格</h2>
+    <div class="stats-grid">
+        {% for p in prices %}
+        <div class="price-card {% if p.peg_warning %}price-card-warning{% endif %}">
+            <div class="price-card-header">
+                <span class="coin-name">{{ p.coin }}</span>
+                <span class="peg-status {% if p.peg_warning %}peg-danger{% else %}peg-ok{% endif %}">
+                    {% if p.peg_warning %}⚠{% else %}✓{% endif %}
+                </span>
+            </div>
+            <div class="price-card-body">
+                <div class="price-usd">${{ "%.4f" % p.price_usd }}</div>
+                <div class="price-meta">
+                    <span>時価総額: ${{ "{:,.0f}".format(p.market_cap) }}</span>
+                    <span>乖離: {{ "%.4f" % p.peg_deviation }}%</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="section">
+    <h2>ソース別記事数</h2>
+    <div class="bar-chart">
+        {% for source, count in source_counts.items() %}
+        <div class="bar-row">
+            <span class="bar-label">{{ source }}</span>
+            <div class="bar-track">
+                <div class="bar-fill" style="width: {{ (count / source_counts.values()|max * 100)|int }}%;">
+                    {{ count }}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="section">
+    <h2>カテゴリ別</h2>
+    <div class="stats-grid">
+        {% for category, count in category_counts.items() %}
+        <div class="card">
+            <div class="card-body">
+                <span class="card-label">{{ category }}</span>
+                <span class="card-value">{{ count }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="section">
+    <h2>重要記事</h2>
+    <div class="card-list">
+        {% for article in important_articles %}
+        <article class="card">
+            <div class="card-header">
+                <span class="badge badge-danger">重要度 {{ article.importance }}</span>
+                <span class="article-source">{{ article.source }}</span>
+                <time>{{ article.published_at }}</time>
+            </div>
+            <h3 class="card-title">
+                <a href="{{ article.url }}" target="_blank" rel="noopener noreferrer">{{ article.title }}</a>
+            </h3>
+            <p class="card-summary">{{ article.summary_ja }}</p>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="section">
+    <h2>最新記事</h2>
+    <div class="card-list">
+        {% for article in recent_articles %}
+        <article class="card article-card">
+            <div class="article-card-header">
+                <div class="article-card-meta">
+                    <span class="badge badge-info">{{ article.source }}</span>
+                    {% if article.category %}
+                    <span class="badge badge-category">{{ article.category }}</span>
+                    {% endif %}
+                    {% if article.importance %}
+                    <span class="badge {% if article.importance >= 4 %}badge-danger{% elif article.importance >= 3 %}badge-warning{% else %}badge-success{% endif %}">
+                        重要度 {{ article.importance }}
+                    </span>
+                    {% endif %}
+                    <time class="text-muted">{{ article.published_at[:10] if article.published_at else '' }}</time>
+                </div>
+            </div>
+            <h3 class="card-title">
+                <a href="/article/{{ article.id }}">{{ article.title }}</a>
+            </h3>
+            {% if article.summary_ja %}
+            <p class="card-summary">{{ article.summary_ja }}</p>
+            {% endif %}
+            {% if article.projects_list %}
+            <div class="article-tags mt-1">
+                {% for proj in article.projects_list %}
+                <span class="badge badge-info">{{ proj }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+            <div class="article-card-footer mt-1">
+                <a href="{{ article.url }}" target="_blank" rel="noopener noreferrer" class="text-muted">元記事を読む →</a>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

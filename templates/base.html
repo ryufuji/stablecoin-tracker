@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Stablecoin Tracker{% endblock %}</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <nav class="nav">
+            <div class="container" style="display:flex;align-items:center;justify-content:space-between;height:56px;flex-wrap:wrap;">
+                <div class="nav-brand">Stablecoin Tracker</div>
+                <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')">☰</button>
+                <ul class="nav-links">
+                    <li><a href="/">ダッシュボード</a></li>
+                    <li><a href="/articles">記事一覧</a></li>
+                    <li><a href="/search">検索</a></li>
+                    <li><a href="/knowledge">ナレッジ</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container" style="padding-top:1.5rem;padding-bottom:2rem;">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>Stablecoin Tracker</p>
+        </div>
+    </footer>
+</body>
+</html>

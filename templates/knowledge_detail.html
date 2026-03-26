@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}{{ chapter.title }} - ナレッジベース{% endblock %}
+
+{% block content %}
+<div class="kb-detail">
+    <div class="kb-breadcrumb">
+        <a href="/knowledge">ナレッジベース</a>
+        <span class="kb-sep">›</span>
+        <a href="/knowledge#{{ section.id }}">{{ section.icon }} {{ section.title }}</a>
+        <span class="kb-sep">›</span>
+        <span>{{ chapter.title }}</span>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <h1 class="kb-detail-title" style="margin-bottom:0;">{{ chapter.title }}</h1>
+        <button class="btn btn-secondary btn-sm" id="easy-toggle" onclick="toggleEasy()">
+            かんたん説明
+        </button>
+    </div>
+
+    {% if chapter.key_points %}
+    <div class="kb-keypoints card">
+        <div class="card-body">
+            <h3 class="kb-keypoints-title">Key Points</h3>
+            <ul class="kb-keypoints-list">
+                {% for point in chapter.key_points %}
+                <li>{{ point }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="kb-content" id="kb-content-normal">
+        {{ chapter.content | replace('\n\n', '</p><p>') | replace('\n- ', '</p><ul><li>') | safe }}
+    </div>
+
+    <div class="kb-content" id="kb-content-easy" style="display:none;">
+        <div id="easy-loading" style="color:#8b949e;padding:2rem 0;text-align:center;">
+            かんたん説明を生成中...
+        </div>
+        <div id="easy-text" style="display:none;"></div>
+    </div>
+
+    <div class="kb-nav-footer">
+        {% if prev_chapter %}
+        <a href="/knowledge/{{ prev_section_id }}/{{ prev_chapter.id }}" class="btn btn-secondary">
+            ← {{ prev_chapter.title }}
+        </a>
+        {% else %}
+        <span></span>
+        {% endif %}
+
+        {% if next_chapter %}
+        <a href="/knowledge/{{ next_section_id }}/{{ next_chapter.id }}" class="btn btn-primary">
+            {{ next_chapter.title }} →
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+let isEasy = false;
+let easyContent = null;
+
+async function toggleEasy() {
+    const normalDiv = document.getElementById('kb-content-normal');
+    const easyDiv = document.getElementById('kb-content-easy');
+    const loading = document.getElementById('easy-loading');
+    const easyText = document.getElementById('easy-text');
+    const btn = document.getElementById('easy-toggle');
+
+    if (isEasy) {
+        normalDiv.style.display = '';
+        easyDiv.style.display = 'none';
+        btn.textContent = 'かんたん説明';
+        isEasy = false;
+        return;
+    }
+
+    if (easyContent) {
+        normalDiv.style.display = 'none';
+        easyDiv.style.display = '';
+        loading.style.display = 'none';
+        easyText.style.display = '';
+        btn.textContent = '通常の説明に戻す';
+        isEasy = true;
+        return;
+    }
+
+    // Fetch easy explanation
+    normalDiv.style.display = 'none';
+    easyDiv.style.display = '';
+    loading.style.display = '';
+    easyText.style.display = 'none';
+    btn.disabled = true;
+
+    try {
+        const resp = await fetch('/api/easy-explain-knowledge', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                title: {{ chapter.title | tojson }},
+                content: {{ chapter.content | tojson }}
+            })
+        });
+        const data = await resp.json();
+        easyContent = data.easy_content;
+
+        // Convert markdown to HTML
+        let html = easyContent;
+        // Headings
+        html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+        html = html.replace(/^## (.+)$/gm, '<h2 style="font-size:1.15rem;color:#58a6ff;margin-top:1.5rem;margin-bottom:0.5rem;">$1</h2>');
+        html = html.replace(/^# (.+)$/gm, '<h2 style="font-size:1.3rem;color:#e1e4e8;margin-top:1.5rem;margin-bottom:0.75rem;">$1</h2>');
+        // Horizontal rules
+        html = html.replace(/^---$/gm, '<hr style="border:none;border-top:1px solid #30363d;margin:1.25rem 0;">');
+        // Bold
+        html = html.replace(/\*\*(.*?)\*\*/g, '<strong style="color:#e1e4e8;">$1</strong>');
+        // Bullet lists
+        html = html.replace(/(?:^|\n)- (.+)/g, function(match, item) {
+            return '<li>' + item + '</li>';
+        });
+        html = html.replace(/(<li>.*?<\/li>)\n?(?=<li>)/gs, '$1');
+        html = html.replace(/((?:<li>.*?<\/li>\s*)+)/gs, '<ul style="padding-left:1.5rem;margin:0.75rem 0;">$1</ul>');
+        // Paragraphs
+        html = html.replace(/\n\n/g, '</p><p>');
+        html = html.replace(/\n/g, '<br>');
+        html = '<p>' + html + '</p>';
+        // Clean up empty paragraphs around block elements
+        html = html.replace(/<p>\s*(<h[23]|<hr|<ul)/g, '$1');
+        html = html.replace(/(<\/h[23]>|<\/ul>)\s*<\/p>/g, '$1');
+
+        easyText.innerHTML = html;
+        loading.style.display = 'none';
+        easyText.style.display = '';
+        btn.textContent = '通常の説明に戻す';
+        isEasy = true;
+    } catch (e) {
+        easyText.textContent = 'エラーが発生しました。もう一度お試しください。';
+        loading.style.display = 'none';
+        easyText.style.display = '';
+    } finally {
+        btn.disabled = false;
+    }
+}
+</script>
+{% endblock %}
