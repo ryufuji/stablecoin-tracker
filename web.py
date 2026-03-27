@@ -293,6 +293,53 @@ def _parse_projects(article):
         article["projects_list"] = []
 
 
+@app.route("/twitter")
+def twitter():
+    """X/Twitter watchlist page."""
+    config = _load_config()
+    accounts = config.get("twitter_accounts", [])
+    selected_category = request.args.get("category", "")
+
+    # Get unique categories
+    categories = sorted(set(a.get("category", "") for a in accounts if a.get("category")))
+
+    # Filter by category if selected
+    if selected_category:
+        accounts = [a for a in accounts if a.get("category") == selected_category]
+
+    # Attach any cached posts from the database
+    storage = _get_storage()
+    for account in accounts:
+        handle = account.get("handle", "")
+        try:
+            conn = sqlite3.connect(storage.db_path)
+            conn.row_factory = sqlite3.Row
+            rows = conn.execute(
+                "SELECT title, url, summary_ja, published_at FROM articles "
+                "WHERE source = ? ORDER BY published_at DESC LIMIT 3",
+                (f"X/@{handle}",),
+            ).fetchall()
+            conn.close()
+            account["recent_posts"] = [
+                {
+                    "text": dict(r)["title"],
+                    "url": dict(r)["url"],
+                    "summary_ja": dict(r).get("summary_ja", ""),
+                    "date": (dict(r).get("published_at") or "")[:10],
+                }
+                for r in rows
+            ]
+        except Exception:
+            account["recent_posts"] = []
+
+    return render_template(
+        "twitter.html",
+        accounts=accounts,
+        categories=categories,
+        selected_category=selected_category,
+    )
+
+
 if __name__ == "__main__":
     debug = os.getenv("FLASK_DEBUG", "true").lower() == "true"
     port = int(os.getenv("PORT", 5001))

@@ -61,6 +61,42 @@
 </div>
 
 <script>
+function mdToHtml(md) {
+    if (!md) return '';
+    const lines = md.split('\n');
+    const blocks = [];
+    let listItems = [];
+
+    function flushList() {
+        if (listItems.length > 0) {
+            blocks.push('<ul class="easy-list">' + listItems.join('') + '</ul>');
+            listItems = [];
+        }
+    }
+
+    for (const line of lines) {
+        const trimmed = line.trim();
+        if (/^---+$/.test(trimmed)) { flushList(); blocks.push('<hr class="easy-hr">'); continue; }
+        if (/^### (.+)$/.test(trimmed)) { flushList(); blocks.push('<h4 class="easy-h4">' + trimmed.replace(/^### /, '') + '</h4>'); continue; }
+        if (/^## (.+)$/.test(trimmed)) { flushList(); blocks.push('<h3 class="easy-h3">' + trimmed.replace(/^## /, '') + '</h3>'); continue; }
+        if (/^# (.+)$/.test(trimmed)) { flushList(); blocks.push('<h3 class="easy-h2">' + trimmed.replace(/^# /, '') + '</h3>'); continue; }
+        if (/^[-*] (.+)$/.test(trimmed)) { listItems.push('<li>' + inlineFmt(trimmed.replace(/^[-*] /, '')) + '</li>'); continue; }
+        if (/^\d+\. (.+)$/.test(trimmed)) { listItems.push('<li>' + inlineFmt(trimmed.replace(/^\d+\. /, '')) + '</li>'); continue; }
+        if (trimmed === '') { flushList(); continue; }
+        flushList();
+        blocks.push('<p class="easy-p">' + inlineFmt(trimmed) + '</p>');
+    }
+    flushList();
+    return blocks.join('');
+}
+
+function inlineFmt(text) {
+    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    text = text.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
+    text = text.replace(/`(.+?)`/g, '<code class="easy-code">$1</code>');
+    return text;
+}
+
 let isEasy = false;
 let easyContent = null;
 
@@ -89,7 +125,6 @@ async function toggleEasy() {
         return;
     }
 
-    // Fetch easy explanation
     normalDiv.style.display = 'none';
     easyDiv.style.display = '';
     loading.style.display = '';
@@ -106,39 +141,17 @@ async function toggleEasy() {
             })
         });
         const data = await resp.json();
+        if (data.error) throw new Error(data.error);
         easyContent = data.easy_content;
 
-        // Convert markdown to HTML
-        let html = easyContent;
-        // Headings
-        html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
-        html = html.replace(/^## (.+)$/gm, '<h2 style="font-size:1.15rem;color:#58a6ff;margin-top:1.5rem;margin-bottom:0.5rem;">$1</h2>');
-        html = html.replace(/^# (.+)$/gm, '<h2 style="font-size:1.3rem;color:#e1e4e8;margin-top:1.5rem;margin-bottom:0.75rem;">$1</h2>');
-        // Horizontal rules
-        html = html.replace(/^---$/gm, '<hr style="border:none;border-top:1px solid #30363d;margin:1.25rem 0;">');
-        // Bold
-        html = html.replace(/\*\*(.*?)\*\*/g, '<strong style="color:#e1e4e8;">$1</strong>');
-        // Bullet lists
-        html = html.replace(/(?:^|\n)- (.+)/g, function(match, item) {
-            return '<li>' + item + '</li>';
-        });
-        html = html.replace(/(<li>.*?<\/li>)\n?(?=<li>)/gs, '$1');
-        html = html.replace(/((?:<li>.*?<\/li>\s*)+)/gs, '<ul style="padding-left:1.5rem;margin:0.75rem 0;">$1</ul>');
-        // Paragraphs
-        html = html.replace(/\n\n/g, '</p><p>');
-        html = html.replace(/\n/g, '<br>');
-        html = '<p>' + html + '</p>';
-        // Clean up empty paragraphs around block elements
-        html = html.replace(/<p>\s*(<h[23]|<hr|<ul)/g, '$1');
-        html = html.replace(/(<\/h[23]>|<\/ul>)\s*<\/p>/g, '$1');
-
-        easyText.innerHTML = html;
+        easyText.innerHTML = mdToHtml(easyContent);
+        easyText.className = 'easy-content';
         loading.style.display = 'none';
         easyText.style.display = '';
         btn.textContent = '通常の説明に戻す';
         isEasy = true;
     } catch (e) {
-        easyText.textContent = 'エラーが発生しました。もう一度お試しください。';
+        easyText.textContent = 'エラーが発生しました: ' + e.message;
         loading.style.display = 'none';
         easyText.style.display = '';
     } finally {

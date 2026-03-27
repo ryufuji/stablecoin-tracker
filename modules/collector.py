@@ -131,10 +131,15 @@ def fetch_prices(config: dict[str, Any]) -> list[dict[str, Any]]:
         logger.warning("No coins configured for CoinGecko")
         return []
 
+    # JPY-pegged coins need JPY pricing
+    jpy_pegged = {"jpyc"}
+    needs_jpy = any(c in jpy_pegged for c in coins)
+
     ids_str = ",".join(coins)
+    vs_currencies = "usd,jpy" if needs_jpy else "usd"
     params = {
         "ids": ids_str,
-        "vs_currencies": "usd",
+        "vs_currencies": vs_currencies,
         "include_market_cap": "true",
     }
 
@@ -153,26 +158,44 @@ def fetch_prices(config: dict[str, Any]) -> list[dict[str, Any]]:
             logger.warning("No CoinGecko data returned for %s", coin)
             continue
 
-        price = info.get("usd", 0.0)
+        price_usd = info.get("usd", 0.0)
         market_cap = info.get("usd_market_cap", 0.0)
-        deviation = abs(price - 1.0)
-        warning = deviation > threshold
 
-        results.append(
-            {
+        if coin in jpy_pegged:
+            # JPY-pegged: check deviation from ¥1
+            price_jpy = info.get("jpy", 0.0)
+            jpyc_cfg = config.get("jpyc", {})
+            target = jpyc_cfg.get("peg_target_jpy", 1.0)
+            jpyc_threshold = jpyc_cfg.get("peg_threshold_pct", 1.0) / 100.0
+            deviation = abs(price_jpy - target) / target if target else 0.0
+            warning = deviation > jpyc_threshold
+            display_info = {
                 "coin": coin,
-                "price_usd": price,
+                "price_usd": price_usd,
+                "price_jpy": price_jpy,
+                "market_cap": market_cap,
+                "peg_target": f"¥{target}",
+                "peg_deviation": round(deviation, 6),
+                "peg_warning": warning,
+            }
+        else:
+            # USD-pegged: check deviation from $1
+            deviation = abs(price_usd - 1.0)
+            warning = deviation > threshold
+            display_info = {
+                "coin": coin,
+                "price_usd": price_usd,
                 "market_cap": market_cap,
                 "peg_deviation": round(deviation, 6),
                 "peg_warning": warning,
             }
-        )
+
+        results.append(display_info)
 
         if warning:
             logger.warning(
-                "Peg deviation alert: %s at $%.4f (deviation %.4f%%)",
+                "Peg deviation alert: %s (deviation %.4f%%)",
                 coin,
-                price,
                 deviation * 100,
             )
 

@@ -18,9 +18,49 @@ rss_feeds:
   - name: あたらしい経済
     url: https://www.neweconomy.jp/feed
 
+# ステーブルコイン界隈の注目アカウント (X/Twitter)
+twitter_accounts:
+  # 海外キーパーソン
+  - handle: PaoloArdoino
+    name: Paolo Ardoino (Tether CEO)
+    category: Tether
+  - handle: jerallaire
+    name: Jeremy Allaire (Circle CEO)
+    category: USDC/Circle
+  - handle: RuneKek
+    name: Rune Christensen (MakerDAO)
+    category: DAI/MakerDAO
+  - handle: staboracle
+    name: Stablecoin Oracle
+    category: 分析
+  - handle: nic__carter
+    name: Nic Carter
+    category: 分析
+  - handle: AnthonyLeeZhang
+    name: Anthony Lee Zhang
+    category: 研究
+  # 日本キーパーソン
+  - handle: okjp
+    name: 岡部典孝 (JPYC CEO)
+    category: JPYC
+  - handle: YuzoKano
+    name: 加納裕三 (bitFlyer)
+    category: 日本市場
+  - handle: coinpost_inc
+    name: CoinPost
+    category: 日本メディア
+  - handle: missbitcoin_mai
+    name: Miss Bitcoin Mai
+    category: 日本市場
+
 coingecko:
-  coins: [tether, usd-coin, dai, usd0]
+  coins: [tether, usd-coin, dai, usd0, jpyc]
   peg_threshold: 0.005  # 0.5%
+
+# JPYC is a JPY-pegged stablecoin (target: ~¥1 = ~$0.0067)
+jpyc:
+  peg_target_jpy: 1.0
+  peg_threshold_pct: 1.0  # 1%
 
 ai:
   model: claude-haiku-4-5-20251001

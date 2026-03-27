@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}X/Twitter - Stablecoin Tracker{% endblock %}
+
+{% block content %}
+<div class="twitter-page">
+    <h1 class="page-title">X/Twitter ウォッチリスト</h1>
+    <p class="text-muted mb-2">ステーブルコイン界隈の注目アカウントの最新ポストを確認できます。</p>
+
+    <div class="filter-form mb-2">
+        <form method="get" action="/twitter" style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
+            <select name="category" class="form-select">
+                <option value="">全カテゴリ</option>
+                {% for cat in categories %}
+                <option value="{{ cat }}" {% if cat == selected_category %}selected{% endif %}>{{ cat }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary btn-sm">フィルタ</button>
+        </form>
+    </div>
+
+    <div class="twitter-grid">
+        {% for account in accounts %}
+        <div class="card twitter-card">
+            <div class="card-body">
+                <div class="twitter-header">
+                    <div class="twitter-avatar">{{ account.name[0] }}</div>
+                    <div class="twitter-info">
+                        <div class="twitter-name">{{ account.name }}</div>
+                        <a href="https://x.com/{{ account.handle }}" target="_blank" rel="noopener noreferrer" class="twitter-handle">@{{ account.handle }}</a>
+                    </div>
+                    <span class="badge badge-info">{{ account.category }}</span>
+                </div>
+
+                {% if account.recent_posts %}
+                <div class="twitter-posts">
+                    {% for post in account.recent_posts %}
+                    <div class="twitter-post">
+                        <p class="twitter-post-text">{{ post.text }}</p>
+                        {% if post.summary_ja %}
+                        <p class="twitter-post-summary">{{ post.summary_ja }}</p>
+                        {% endif %}
+                        <div class="twitter-post-meta">
+                            <time class="text-muted">{{ post.date }}</time>
+                            <a href="{{ post.url }}" target="_blank" rel="noopener noreferrer" class="twitter-post-link">元ポスト →</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="twitter-embed-fallback">
+                    <a href="https://x.com/{{ account.handle }}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm" style="margin-top:0.75rem;">
+                        @{{ account.handle }} のポストを見る →
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

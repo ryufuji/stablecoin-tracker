@@ -1188,3 +1188,203 @@ img {
   font-size: 0.9rem;
   margin-bottom: 1rem;
 }
+
+/* ==========================================================================
+   Easy Explanation Styles
+   ========================================================================== */
+
+.easy-content {
+  color: #c9d1d9;
+  font-size: 1.05rem;
+  line-height: 2;
+}
+
+.easy-content .easy-p {
+  margin: 0.75rem 0;
+  color: #e1e4e8;
+}
+
+.easy-content .easy-h2 {
+  font-size: 1.2rem;
+  color: #e1e4e8;
+  margin: 1.5rem 0 0.75rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid #30363d;
+}
+
+.easy-content .easy-h3 {
+  font-size: 1.1rem;
+  color: #58a6ff;
+  margin: 1.25rem 0 0.5rem;
+}
+
+.easy-content .easy-h4 {
+  font-size: 1rem;
+  color: #79c0ff;
+  margin: 1rem 0 0.4rem;
+}
+
+.easy-content .easy-list {
+  padding-left: 1.5rem;
+  margin: 0.75rem 0;
+  list-style: none;
+}
+
+.easy-content .easy-list li {
+  position: relative;
+  padding: 0.3rem 0 0.3rem 0.5rem;
+  color: #c9d1d9;
+  line-height: 1.7;
+}
+
+.easy-content .easy-list li::before {
+  content: "▸";
+  position: absolute;
+  left: -1rem;
+  color: #58a6ff;
+}
+
+.easy-content .easy-hr {
+  border: none;
+  border-top: 1px solid #30363d;
+  margin: 1.25rem 0;
+}
+
+.easy-content .easy-code {
+  background: #1b2028;
+  color: #79c0ff;
+  padding: 0.15rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+.easy-content strong {
+  color: #e1e4e8;
+  font-weight: 600;
+}
+
+.easy-content em {
+  color: #d2a8ff;
+  font-style: italic;
+}
+
+/* ==========================================================================
+   Twitter Watch Styles
+   ========================================================================== */
+
+.twitter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+
+.twitter-card {
+  border: 1px solid #30363d;
+}
+
+.twitter-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #21262d;
+}
+
+.twitter-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1d9bf0, #0d6ebd);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.twitter-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.twitter-name {
+  color: #e1e4e8;
+  font-weight: 600;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.twitter-handle {
+  color: #1d9bf0;
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+.twitter-handle:hover {
+  text-decoration: underline;
+}
+
+.twitter-posts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.twitter-post {
+  padding: 0.75rem;
+  background: #161b22;
+  border-radius: 8px;
+  border-left: 3px solid #1d9bf0;
+}
+
+.twitter-post-text {
+  color: #c9d1d9;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin: 0 0 0.4rem;
+}
+
+.twitter-post-summary {
+  color: #58a6ff;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin: 0.4rem 0;
+  padding: 0.4rem 0.6rem;
+  background: rgba(88, 166, 255, 0.08);
+  border-radius: 4px;
+}
+
+.twitter-post-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
+}
+
+.twitter-post-link {
+  color: #1d9bf0;
+  text-decoration: none;
+  font-size: 0.8rem;
+}
+
+.twitter-post-link:hover {
+  text-decoration: underline;
+}
+
+.twitter-embed-fallback {
+  text-align: center;
+  padding: 1rem 0;
+}
+
+@media (max-width: 768px) {
+  .twitter-grid {
+    grid-template-columns: 1fr;
+  }
+}
