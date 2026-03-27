@@ -70,16 +70,32 @@ class Storage:
     # ------------------------------------------------------------------
 
     def save_article(self, article: dict[str, Any]) -> None:
-        """Insert a single article.  Silently skips duplicates."""
+        """Insert a single article with optional AI fields.  Silently skips duplicates."""
         try:
+            # Prepare projects as JSON string if it's a list
+            projects = article.get("projects")
+            if isinstance(projects, list):
+                projects = json.dumps(projects, ensure_ascii=False)
+
             with self._connect() as conn:
                 conn.execute(
                     """
                     INSERT OR IGNORE INTO articles
-                        (url, title, source, published_at, raw_text)
-                    VALUES (:url, :title, :source, :published_at, :raw_text)
+                        (url, title, source, published_at, raw_text,
+                         summary_ja, category, projects, importance)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
-                    article,
+                    (
+                        article.get("url"),
+                        article.get("title"),
+                        article.get("source"),
+                        article.get("published_at"),
+                        article.get("raw_text"),
+                        article.get("summary_ja"),
+                        article.get("category"),
+                        projects,
+                        article.get("importance"),
+                    ),
                 )
         except sqlite3.Error:
             logger.exception("Failed to save article: %s", article.get("url"))

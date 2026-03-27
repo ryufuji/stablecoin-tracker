@@ -66,8 +66,49 @@ def _run_collection():
                 except Exception:
                     pass
             logger.info(f"Collection done: {saved} new articles saved (from {len(articles)} fetched)")
+
+            # Process any existing articles that lack AI fields
+            if api_key:
+                _backfill_ai(storage, config)
+
         except Exception as e:
             logger.error(f"Collection failed: {e}")
+
+
+def _backfill_ai(storage, config):
+    """Find articles without AI processing and run them through the processor."""
+    try:
+        conn = sqlite3.connect(storage.db_path)
+        conn.row_factory = sqlite3.Row
+        rows = conn.execute(
+            "SELECT id, url, title, raw_text FROM articles WHERE summary_ja IS NULL LIMIT 20"
+        ).fetchall()
+        conn.close()
+
+        if not rows:
+            return
+
+        logger.info("Backfilling AI for %d unprocessed articles", len(rows))
+        from modules.processor import Processor
+        processor = Processor(config)
+
+        for row in rows:
+            article = dict(row)
+            try:
+                result = processor.process_article(article)
+                if result:
+                    storage.update_ai_fields(
+                        article["url"],
+                        result["summary_ja"],
+                        result["category"],
+                        result["projects"],
+                        result["importance"],
+                    )
+                    logger.info("AI backfill done: %s", article["title"][:50])
+            except Exception as e:
+                logger.error(f"AI backfill failed for {article['title'][:50]}: {e}")
+    except Exception as e:
+        logger.error(f"Backfill query failed: {e}")
 
 
 def _collection_loop():

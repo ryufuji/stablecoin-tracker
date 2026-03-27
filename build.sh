@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
-# Render build script: install deps + collect initial articles
+# Render build script: install dependencies only
+# Article collection with AI processing runs automatically at runtime
 set -e
 
 pip install -r requirements.txt
-
-# Collect articles on deploy (no AI to avoid API cost during build)
-python main.py collect --no-ai || echo "Article collection skipped (non-fatal)"
