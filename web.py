@@ -6,6 +6,7 @@ import logging
 import os
 import sqlite3
 import threading
+import time
 
 from flask import Flask, jsonify, render_template, request
 
@@ -19,9 +20,12 @@ from modules.storage import Storage
 app = Flask(__name__)
 logger = logging.getLogger(__name__)
 
+logging.basicConfig(level=logging.INFO)
+
 CONFIG_PATH = "config.yaml"
 _collect_lock = threading.Lock()
-_collected = False
+_scheduler_started = False
+_COLLECT_INTERVAL = int(os.getenv("COLLECT_INTERVAL", "3600"))  # default 1 hour
 
 
 def _load_config():
@@ -35,39 +39,42 @@ def _get_storage():
     return Storage()
 
 
-def _background_collect():
-    """Collect articles in background on first access if DB is empty."""
-    global _collected
-    if _collected:
-        return
+def _run_collection():
+    """Collect articles once, saving new ones to DB."""
     with _collect_lock:
-        if _collected:
-            return
         try:
             storage = _get_storage()
             config = _load_config()
-            existing = storage.get_articles(days=3650)
-            if len(existing) == 0:
-                logger.info("DB is empty, collecting articles...")
-                articles = collect_articles(config, storage)
-                for article in articles:
-                    try:
-                        storage.save_article(article)
-                    except Exception:
-                        pass
-                logger.info(f"Background collection done: {len(articles)} articles")
-            _collected = True
+            articles = collect_articles(config, storage)
+            saved = 0
+            for article in articles:
+                try:
+                    storage.save_article(article)
+                    saved += 1
+                except Exception:
+                    pass
+            logger.info(f"Collection done: {saved} new articles saved (from {len(articles)} fetched)")
         except Exception as e:
-            logger.error(f"Background collection failed: {e}")
-            _collected = True
+            logger.error(f"Collection failed: {e}")
+
+
+def _collection_loop():
+    """Background loop: collect immediately, then every COLLECT_INTERVAL seconds."""
+    logger.info("Starting auto-collection loop (interval=%ds)", _COLLECT_INTERVAL)
+    _run_collection()
+    while True:
+        time.sleep(_COLLECT_INTERVAL)
+        logger.info("Periodic collection triggered")
+        _run_collection()
 
 
 @app.before_request
 def ensure_data():
-    """Trigger background collection on first request."""
-    global _collected
-    if not _collected:
-        t = threading.Thread(target=_background_collect, daemon=True)
+    """Start the background collection scheduler on first request."""
+    global _scheduler_started
+    if not _scheduler_started:
+        _scheduler_started = True
+        t = threading.Thread(target=_collection_loop, daemon=True)
         t.start()
 
 
