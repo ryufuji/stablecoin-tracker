@@ -35,10 +35,10 @@ def dashboard():
     config = _load_config()
     storage = _get_storage()
 
-    source_counts = storage.get_article_count_by_source(days=1)
-    category_counts = storage.get_category_counts(days=1)
-    important_articles = storage.get_articles(days=1, min_importance=5)
-    recent_articles = storage.get_articles(days=1)[:10]
+    source_counts = storage.get_article_count_by_source(days=30)
+    category_counts = storage.get_category_counts(days=30)
+    important_articles = storage.get_articles(days=30, min_importance=5)[:5]
+    recent_articles = storage.get_articles(days=30)[:10]
 
     # Parse projects JSON for display
     for a in important_articles + recent_articles:

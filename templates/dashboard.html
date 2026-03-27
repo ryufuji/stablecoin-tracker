@@ -3,33 +3,40 @@
 {% block title %}ダッシュボード - Stablecoin Tracker{% endblock %}
 
 {% block content %}
-<h1>ダッシュボード</h1>
+<h1 class="page-title">ダッシュボード</h1>
 
 <section class="section">
-    <h2>ステーブルコイン価格</h2>
-    <div class="stats-grid">
+    <h2 class="section-title">ステーブルコイン価格</h2>
+    <div class="price-grid">
         {% for p in prices %}
-        <div class="price-card {% if p.peg_warning %}price-card-warning{% endif %}">
-            <div class="price-card-header">
-                <span class="coin-name">{{ p.coin }}</span>
-                <span class="peg-status {% if p.peg_warning %}peg-danger{% else %}peg-ok{% endif %}">
-                    {% if p.peg_warning %}⚠{% else %}✓{% endif %}
-                </span>
-            </div>
-            <div class="price-card-body">
-                <div class="price-usd">${{ "%.4f" % p.price_usd }}</div>
-                <div class="price-meta">
-                    <span>時価総額: ${{ "{:,.0f}".format(p.market_cap) }}</span>
-                    <span>乖離: {{ "%.4f" % p.peg_deviation }}%</span>
+        <div class="price-card {% if p.peg_warning %}peg-warning{% else %}peg-ok{% endif %}">
+            <div class="price-card-top">
+                <div class="coin-icon">{{ p.coin[:2].upper() }}</div>
+                <div class="coin-info">
+                    <div class="coin-name">{{ p.coin }}</div>
+                    <div class="peg-status-text {% if p.peg_warning %}text-danger{% else %}text-success{% endif %}">
+                        {% if p.peg_warning %}⚠ DEPEG{% else %}✓ 正常{% endif %}
+                    </div>
                 </div>
+            </div>
+            <div class="coin-price">${{ "%.4f" % p.price_usd }}</div>
+            {% if p.price_jpy is defined and p.price_jpy %}
+            <div class="coin-jpy">¥{{ "%.2f" % p.price_jpy }}</div>
+            {% endif %}
+            <div class="coin-details">
+                <span class="coin-mcap">時価総額: ${{ "{:,.0f}".format(p.market_cap) }}</span>
+                <span class="coin-deviation {% if p.peg_warning %}text-danger{% else %}text-success{% endif %}">
+                    乖離: {{ "%.4f" % (p.peg_deviation * 100) }}%
+                </span>
             </div>
         </div>
         {% endfor %}
     </div>
 </section>
 
+{% if source_counts %}
 <section class="section">
-    <h2>ソース別記事数</h2>
+    <h2 class="section-title">ソース別記事数</h2>
     <div class="bar-chart">
         {% for source, count in source_counts.items() %}
         <div class="bar-row">
@@ -43,58 +50,62 @@
         {% endfor %}
     </div>
 </section>
+{% endif %}
 
+{% if category_counts %}
 <section class="section">
-    <h2>カテゴリ別</h2>
-    <div class="stats-grid">
+    <h2 class="section-title">カテゴリ別</h2>
+    <div class="category-grid">
         {% for category, count in category_counts.items() %}
-        <div class="card">
-            <div class="card-body">
-                <span class="card-label">{{ category }}</span>
-                <span class="card-value">{{ count }}</span>
-            </div>
+        <div class="category-card">
+            <span class="category-name">{{ category }}</span>
+            <span class="category-count">{{ count }}</span>
         </div>
         {% endfor %}
     </div>
 </section>
+{% endif %}
 
+{% if important_articles %}
 <section class="section">
-    <h2>重要記事</h2>
+    <h2 class="section-title">重要記事 <span class="badge badge-danger">重要度5</span></h2>
     <div class="card-list">
         {% for article in important_articles %}
-        <article class="card">
-            <div class="card-header">
+        <article class="card importance-high">
+            <div class="article-card-meta">
                 <span class="badge badge-danger">重要度 {{ article.importance }}</span>
-                <span class="article-source">{{ article.source }}</span>
-                <time>{{ article.published_at }}</time>
+                <span class="badge badge-info">{{ article.source }}</span>
+                <time class="text-muted">{{ article.published_at[:10] if article.published_at else '' }}</time>
             </div>
             <h3 class="card-title">
-                <a href="{{ article.url }}" target="_blank" rel="noopener noreferrer">{{ article.title }}</a>
+                <a href="/article/{{ article.id }}">{{ article.title }}</a>
             </h3>
+            {% if article.summary_ja %}
             <p class="card-summary">{{ article.summary_ja }}</p>
+            {% endif %}
         </article>
         {% endfor %}
     </div>
 </section>
+{% endif %}
 
 <section class="section">
-    <h2>最新記事</h2>
+    <h2 class="section-title">最新記事</h2>
+    {% if recent_articles %}
     <div class="card-list">
         {% for article in recent_articles %}
         <article class="card article-card">
-            <div class="article-card-header">
-                <div class="article-card-meta">
-                    <span class="badge badge-info">{{ article.source }}</span>
-                    {% if article.category %}
-                    <span class="badge badge-category">{{ article.category }}</span>
-                    {% endif %}
-                    {% if article.importance %}
-                    <span class="badge {% if article.importance >= 4 %}badge-danger{% elif article.importance >= 3 %}badge-warning{% else %}badge-success{% endif %}">
-                        重要度 {{ article.importance }}
-                    </span>
-                    {% endif %}
-                    <time class="text-muted">{{ article.published_at[:10] if article.published_at else '' }}</time>
-                </div>
+            <div class="article-card-meta">
+                <span class="badge badge-info">{{ article.source }}</span>
+                {% if article.category %}
+                <span class="badge badge-category">{{ article.category }}</span>
+                {% endif %}
+                {% if article.importance %}
+                <span class="badge {% if article.importance >= 4 %}badge-danger{% elif article.importance >= 3 %}badge-warning{% else %}badge-success{% endif %}">
+                    重要度 {{ article.importance }}
+                </span>
+                {% endif %}
+                <time class="text-muted">{{ article.published_at[:10] if article.published_at else '' }}</time>
             </div>
             <h3 class="card-title">
                 <a href="/article/{{ article.id }}">{{ article.title }}</a>
@@ -109,11 +120,13 @@
                 {% endfor %}
             </div>
             {% endif %}
-            <div class="article-card-footer mt-1">
-                <a href="{{ article.url }}" target="_blank" rel="noopener noreferrer" class="text-muted">元記事を読む →</a>
-            </div>
         </article>
         {% endfor %}
     </div>
+    {% else %}
+    <div class="empty-state">
+        <p>まだ記事がありません。記事を収集するには、サーバーで <code>python main.py collect</code> を実行してください。</p>
+    </div>
+    {% endif %}
 </section>
 {% endblock %}

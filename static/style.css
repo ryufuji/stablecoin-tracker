@@ -192,66 +192,109 @@ img {
 /* ==========================================================================
    Price Cards (.price-card)
    ========================================================================== */
-.price-card {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  padding: 1.25rem 1.5rem;
+.price-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
-.price-card .coin-icon {
-  width: 44px;
-  height: 44px;
+.price-card {
+  background-color: #21262d;
+  border: 1px solid #30363d;
+  border-radius: 10px;
+  padding: 1.25rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  animation: fadeInUp 0.4s ease both;
+}
+
+.price-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.price-card-top {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.coin-icon {
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
-  flex-shrink: 0;
-  background-color: #30363d;
+  background: linear-gradient(135deg, #30363d, #21262d);
+  border: 2px solid #484f58;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   color: #e1e4e8;
+  flex-shrink: 0;
 }
 
-.price-card .coin-info {
+.coin-info {
   flex: 1;
   min-width: 0;
 }
 
-.price-card .coin-name {
+.coin-name {
   font-size: 1rem;
   font-weight: 600;
   color: #e1e4e8;
-  margin-bottom: 0.1rem;
+  text-transform: capitalize;
 }
 
-.price-card .coin-symbol {
-  font-size: 0.8rem;
-  color: #8b949e;
+.peg-status-text {
+  font-size: 0.75rem;
+  font-weight: 500;
 }
 
-.price-card .coin-price {
-  font-size: 1.5rem;
+.coin-price {
+  font-size: 1.6rem;
   font-weight: 700;
   color: #ffffff;
-  text-align: right;
+  margin-bottom: 0.15rem;
 }
 
-.price-card .coin-mcap {
-  font-size: 0.8rem;
+.coin-jpy {
+  font-size: 0.9rem;
   color: #8b949e;
-  text-align: right;
-  margin-top: 0.15rem;
+  margin-bottom: 0.5rem;
+}
+
+.coin-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #30363d;
+}
+
+.coin-mcap {
+  font-size: 0.78rem;
+  color: #8b949e;
+}
+
+.coin-deviation {
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.text-success {
+  color: #3fb950;
+}
+
+.text-danger {
+  color: #f85149;
 }
 
 /* Peg status indicators */
 .peg-ok {
   border-left: 3px solid #3fb950;
-}
-
-.peg-ok::before {
-  content: '';
-  display: none;
 }
 
 .peg-warning {
@@ -268,6 +311,151 @@ img {
     border-left-color: #ff7b72;
     box-shadow: 0 0 12px rgba(248, 81, 73, 0.25);
   }
+}
+
+/* Section styles */
+.section {
+  margin-bottom: 2rem;
+}
+
+.section-title {
+  font-size: 1.2rem;
+  color: #e1e4e8;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #21262d;
+}
+
+.page-title {
+  font-size: 1.5rem;
+  color: #e1e4e8;
+  margin-bottom: 1.5rem;
+}
+
+/* Bar chart */
+.bar-chart {
+  background: #21262d;
+  border-radius: 8px;
+  padding: 1rem;
+  border: 1px solid #30363d;
+}
+
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.bar-row:last-child {
+  margin-bottom: 0;
+}
+
+.bar-label {
+  width: 140px;
+  flex-shrink: 0;
+  color: #c9d1d9;
+  font-size: 0.85rem;
+}
+
+.bar-track {
+  flex: 1;
+  height: 24px;
+  background: #0d1117;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #238636, #3fb950);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 0.5rem;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  min-width: 30px;
+}
+
+/* Category grid */
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.75rem;
+}
+
+.category-card {
+  background: #21262d;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.category-name {
+  color: #c9d1d9;
+  font-size: 0.9rem;
+}
+
+.category-count {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #58a6ff;
+}
+
+/* Card list */
+.card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.article-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+}
+
+.card-summary {
+  color: #8b949e;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin-top: 0.5rem;
+}
+
+.article-tags {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.importance-high {
+  border-left: 3px solid #f0883e;
+}
+
+/* Empty state */
+.empty-state {
+  background: #21262d;
+  border: 1px dashed #30363d;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  color: #8b949e;
+}
+
+.empty-state code {
+  background: #161b22;
+  color: #79c0ff;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
 }
 
 /* ==========================================================================
