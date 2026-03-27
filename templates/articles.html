@@ -10,11 +10,14 @@
         <label for="category">カテゴリ</label>
         <select name="category" id="category">
             <option value="" {% if request.args.get('category', '') == '' %}selected{% endif %}>すべて</option>
-            <option value="規制" {% if request.args.get('category') == '規制' %}selected{% endif %}>規制</option>
+            <option value="規制・法令" {% if request.args.get('category') == '規制・法令' %}selected{% endif %}>規制・法令</option>
             <option value="技術" {% if request.args.get('category') == '技術' %}selected{% endif %}>技術</option>
-            <option value="市場" {% if request.args.get('category') == '市場' %}selected{% endif %}>市場</option>
+            <option value="市場動向" {% if request.args.get('category') == '市場動向' %}selected{% endif %}>市場動向</option>
             <option value="DeFi" {% if request.args.get('category') == 'DeFi' %}selected{% endif %}>DeFi</option>
-            <option value="事件" {% if request.args.get('category') == '事件' %}selected{% endif %}>事件</option>
+            <option value="事件・リスク" {% if request.args.get('category') == '事件・リスク' %}selected{% endif %}>事件・リスク</option>
+            <option value="ユースケース" {% if request.args.get('category') == 'ユースケース' %}selected{% endif %}>ユースケース</option>
+            <option value="戦略・提携" {% if request.args.get('category') == '戦略・提携' %}selected{% endif %}>戦略・提携</option>
+            <option value="導入事例" {% if request.args.get('category') == '導入事例' %}selected{% endif %}>導入事例</option>
         </select>
     </div>
     <div class="form-group">

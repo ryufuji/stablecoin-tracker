@@ -1,5 +1,16 @@
 rss_feeds:
-  # 海外メディア
+  # ── ステーブルコイン専門ソース（フィルタ不要） ──
+  - name: Circle Blog
+    url: https://www.circle.com/blog/rss.xml
+    stablecoin_only: true
+  - name: Tether News
+    url: https://tether.to/en/rss/
+    stablecoin_only: true
+  - name: MakerDAO Blog
+    url: https://blog.makerdao.com/feed/
+    stablecoin_only: true
+
+  # ── 海外総合メディア（ステーブルコイン関連のみフィルタ） ──
   - name: CoinDesk
     url: https://www.coindesk.com/arc/outboundfeeds/rss/
   - name: The Block
@@ -10,7 +21,10 @@ rss_feeds:
     url: https://www.dlnews.com/rss/
   - name: Bankless
     url: https://www.bankless.com/rss
-  # 日本メディア
+  - name: Cointelegraph
+    url: https://cointelegraph.com/rss
+
+  # ── 日本メディア（ステーブルコイン関連のみフィルタ） ──
   - name: CoinPost
     url: https://coinpost.jp/?feed=rss2
   - name: CoinDesk Japan

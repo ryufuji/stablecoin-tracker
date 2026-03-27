@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from datetime import datetime, timezone
 from typing import Any
 
@@ -14,16 +15,69 @@ logger = logging.getLogger(__name__)
 _COINGECKO_PRICE_URL = "https://api.coingecko.com/api/v3/simple/price"
 _REQUEST_TIMEOUT = 15  # seconds
 
+# ------------------------------------------------------------------
+# Stablecoin relevance filter keywords
+# ------------------------------------------------------------------
+# Articles from general crypto feeds must match at least one keyword
+# to be stored.  Feeds marked stablecoin_only: false bypass the filter.
+
+_STABLECOIN_KEYWORDS: list[str] = [
+    # Core terms
+    "stablecoin", "stable coin", "stablecoins",
+    "ステーブルコイン", "安定通貨",
+    # Major projects
+    "usdt", "tether", "usdc", "circle",
+    "dai", "makerdao", "maker dao", "sky protocol",
+    "busd", "tusd", "frax", "lusd", "gho", "aave",
+    "usd0", "usual", "ethena", "usde", "susde",
+    "pyusd", "paypal usd",
+    "fdusd", "first digital",
+    "jpyc", "gyen",
+    "eurc", "eurs",
+    # Peg / depeg
+    "depeg", "de-peg", "peg stability", "ペッグ", "デペッグ",
+    # Regulation & law
+    "mica regulation", "mica rule", "clarity act",
+    "stablecoin bill", "stablecoin regulation",
+    "stablecoin legislation", "genius act",
+    "payment stablecoin",
+    "資金決済法", "電子決済手段",
+    # Use cases & payments
+    "stablecoin payment", "stablecoin settlement",
+    "stablecoin remittance", "stablecoin transfer",
+    "tokenized deposit", "トークン化預金",
+    "cbdc",
+    # Reserve / backing
+    "reserve attestation", "proof of reserves",
+    "reserve backing", "treasury backing",
+    # Yield / defi
+    "stablecoin yield", "stablecoin lending",
+    "stablecoin interest", "stablecoin swap",
+]
+
+_KEYWORDS_PATTERN = re.compile(
+    "|".join(re.escape(kw) for kw in _STABLECOIN_KEYWORDS),
+    re.IGNORECASE,
+)
+
+
+def _is_stablecoin_related(title: str, raw_text: str) -> bool:
+    """Return True if the article is relevant to stablecoins."""
+    search_text = f"{title} {raw_text}"
+    return bool(_KEYWORDS_PATTERN.search(search_text))
+
 
 # ------------------------------------------------------------------
 # F1-1  RSS Feed Collection
 # ------------------------------------------------------------------
 
 
-def _parse_feed(feed_cfg: dict[str, str], storage: Any | None) -> list[dict[str, Any]]:
+def _parse_feed(feed_cfg: dict[str, str], storage: Any | None, apply_filter: bool = True) -> list[dict[str, Any]]:
     """Parse a single RSS feed and return new (non-duplicate) article dicts."""
     name = feed_cfg["name"]
     url = feed_cfg["url"]
+    # Feeds explicitly marked stablecoin_only: true skip the filter
+    is_dedicated = feed_cfg.get("stablecoin_only", False)
     articles: list[dict[str, Any]] = []
 
     try:
@@ -36,11 +90,20 @@ def _parse_feed(feed_cfg: dict[str, str], storage: Any | None) -> list[dict[str,
         logger.warning("RSS feed returned no entries: %s (%s)", name, url)
         return articles
 
+    skipped = 0
     for entry in feed.entries:
         link = entry.get("link", "")
         if not link:
             continue
         if storage and storage.is_duplicate(link):
+            continue
+
+        title = entry.get("title", "(no title)")
+        raw_text = entry.get("summary") or entry.get("description") or ""
+
+        # Filter: general feeds keep only stablecoin-related articles
+        if apply_filter and not is_dedicated and not _is_stablecoin_related(title, raw_text):
+            skipped += 1
             continue
 
         # Best-effort published timestamp
@@ -51,12 +114,9 @@ def _parse_feed(feed_cfg: dict[str, str], storage: Any | None) -> list[dict[str,
             except Exception:
                 pass
 
-        # Summary / beginning of the article body
-        raw_text = entry.get("summary") or entry.get("description") or ""
-
         articles.append(
             {
-                "title": entry.get("title", "(no title)"),
+                "title": title,
                 "url": link,
                 "source": name,
                 "published_at": published_at,
@@ -64,7 +124,10 @@ def _parse_feed(feed_cfg: dict[str, str], storage: Any | None) -> list[dict[str,
             }
         )
 
-    logger.info("Feed %s: %d new articles", name, len(articles))
+    if skipped:
+        logger.info("Feed %s: %d articles kept, %d filtered out (not stablecoin-related)", name, len(articles), skipped)
+    else:
+        logger.info("Feed %s: %d new articles", name, len(articles))
     return articles
 
 
