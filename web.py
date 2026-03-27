@@ -40,12 +40,24 @@ def _get_storage():
 
 
 def _run_collection():
-    """Collect articles once, saving new ones to DB."""
+    """Collect articles once, run AI processing, and save to DB."""
     with _collect_lock:
         try:
             storage = _get_storage()
             config = _load_config()
             articles = collect_articles(config, storage)
+
+            # AI processing if API key is available
+            api_key = os.getenv("ANTHROPIC_API_KEY")
+            if api_key and articles:
+                try:
+                    from modules.processor import Processor
+                    processor = Processor(config)
+                    articles = processor.process_articles(articles)
+                    logger.info("AI processing completed for %d articles", len(articles))
+                except Exception as e:
+                    logger.error(f"AI processing failed (saving without AI): {e}")
+
             saved = 0
             for article in articles:
                 try:
