@@ -143,12 +143,27 @@ def fetch_prices(config: dict[str, Any]) -> list[dict[str, Any]]:
         "include_market_cap": "true",
     }
 
-    try:
-        resp = requests.get(_COINGECKO_PRICE_URL, params=params, timeout=_REQUEST_TIMEOUT)
-        resp.raise_for_status()
-        data = resp.json()
-    except requests.RequestException:
-        logger.exception("CoinGecko API request failed")
+    import time
+
+    data = None
+    for attempt in range(3):
+        try:
+            resp = requests.get(_COINGECKO_PRICE_URL, params=params, timeout=_REQUEST_TIMEOUT)
+            if resp.status_code == 429:
+                wait = 2 ** attempt
+                logger.warning("CoinGecko rate limited, retrying in %ds...", wait)
+                time.sleep(wait)
+                continue
+            resp.raise_for_status()
+            data = resp.json()
+            break
+        except requests.RequestException:
+            logger.exception("CoinGecko API request failed (attempt %d)", attempt + 1)
+            if attempt < 2:
+                time.sleep(2 ** attempt)
+
+    if data is None:
+        logger.error("CoinGecko API: all attempts failed")
         return []
 
     results: list[dict[str, Any]] = []

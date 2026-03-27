@@ -7,6 +7,7 @@
 
 <section class="section">
     <h2 class="section-title">ステーブルコイン価格</h2>
+    {% if prices %}
     <div class="price-grid">
         {% for p in prices %}
         <div class="price-card {% if p.peg_warning %}peg-warning{% else %}peg-ok{% endif %}">
@@ -32,6 +33,11 @@
         </div>
         {% endfor %}
     </div>
+    {% else %}
+    <div class="empty-state">
+        <p>価格データを取得できませんでした。CoinGecko APIのレートリミットの可能性があります。ページを再読み込みしてください。</p>
+    </div>
+    {% endif %}
 </section>
 
 {% if source_counts %}
