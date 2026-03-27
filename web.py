@@ -2,8 +2,10 @@
 """Stablecoin Tracker - Flask Web UI"""
 
 import json
+import logging
 import os
 import sqlite3
+import threading
 
 from flask import Flask, jsonify, render_template, request
 
@@ -11,12 +13,15 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from modules.collector import fetch_prices
+from modules.collector import collect_articles, fetch_prices
 from modules.storage import Storage
 
 app = Flask(__name__)
+logger = logging.getLogger(__name__)
 
 CONFIG_PATH = "config.yaml"
+_collect_lock = threading.Lock()
+_collected = False
 
 
 def _load_config():
@@ -28,6 +33,42 @@ def _load_config():
 
 def _get_storage():
     return Storage()
+
+
+def _background_collect():
+    """Collect articles in background on first access if DB is empty."""
+    global _collected
+    if _collected:
+        return
+    with _collect_lock:
+        if _collected:
+            return
+        try:
+            storage = _get_storage()
+            config = _load_config()
+            existing = storage.get_articles(days=3650)
+            if len(existing) == 0:
+                logger.info("DB is empty, collecting articles...")
+                articles = collect_articles(config, storage)
+                for article in articles:
+                    try:
+                        storage.save_article(article)
+                    except Exception:
+                        pass
+                logger.info(f"Background collection done: {len(articles)} articles")
+            _collected = True
+        except Exception as e:
+            logger.error(f"Background collection failed: {e}")
+            _collected = True
+
+
+@app.before_request
+def ensure_data():
+    """Trigger background collection on first request."""
+    global _collected
+    if not _collected:
+        t = threading.Thread(target=_background_collect, daemon=True)
+        t.start()
 
 
 @app.route("/")
