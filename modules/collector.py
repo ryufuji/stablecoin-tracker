@@ -53,6 +53,22 @@ _STABLECOIN_KEYWORDS: list[str] = [
     # Yield / defi
     "stablecoin yield", "stablecoin lending",
     "stablecoin interest", "stablecoin swap",
+    # Incidents & security
+    "stablecoin hack", "stablecoin exploit",
+    "stablecoin freeze", "blacklist", "sanction",
+    "terra luna", "ust collapse", "silicon valley bank",
+    "algorithmic stablecoin",
+    # Strategy & adoption
+    "stablecoin adoption", "stablecoin integration",
+    "stablecoin partnership", "stablecoin market cap",
+    "stablecoin dominance", "stablecoin inflow",
+    "stablecoin outflow", "stablecoin supply",
+    "cross-border payment", "クロスボーダー",
+    # Institutions
+    "visa stablecoin", "mastercard stablecoin",
+    "stripe stablecoin", "swift stablecoin",
+    "bank stablecoin", "jp morgan",
+    "paypal stablecoin",
 ]
 
 _KEYWORDS_PATTERN = re.compile(

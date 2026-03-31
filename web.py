@@ -27,6 +27,10 @@ _collect_lock = threading.Lock()
 _scheduler_started = False
 _COLLECT_INTERVAL = int(os.getenv("COLLECT_INTERVAL", "3600"))  # default 1 hour
 
+# Price cache to avoid CoinGecko rate limits
+_price_cache = {"data": [], "timestamp": 0}
+_PRICE_CACHE_TTL = 300  # 5 minutes
+
 
 def _load_config():
     import yaml
@@ -145,8 +149,15 @@ def dashboard():
     for a in important_articles + recent_articles:
         _parse_projects(a)
 
-    # Fetch prices
-    prices = fetch_prices(config)
+    # Fetch prices (cached)
+    now = time.time()
+    if now - _price_cache["timestamp"] < _PRICE_CACHE_TTL and _price_cache["data"]:
+        prices = _price_cache["data"]
+    else:
+        prices = fetch_prices(config)
+        if prices:
+            _price_cache["data"] = prices
+            _price_cache["timestamp"] = now
 
     return render_template(
         "dashboard.html",

@@ -24,6 +24,20 @@ rss_feeds:
   - name: Cointelegraph
     url: https://cointelegraph.com/rss
 
+  # ── 規制・法令・政策系 ──
+  - name: CoinDesk Policy
+    url: https://www.coindesk.com/arc/outboundfeeds/rss/category/policy/
+  - name: Cointelegraph Regulation
+    url: https://cointelegraph.com/rss/tag/regulation
+
+  # ── DeFi・ユースケース・戦略系 ──
+  - name: Defiant
+    url: https://thedefiant.io/feed
+  - name: Blockworks
+    url: https://blockworks.co/feed
+  - name: Rekt News
+    url: https://rekt.news/feed/
+
   # ── 日本メディア（ステーブルコイン関連のみフィルタ） ──
   - name: CoinPost
     url: https://coinpost.jp/?feed=rss2
@@ -31,6 +45,8 @@ rss_feeds:
     url: https://www.coindeskjapan.com/feed/
   - name: あたらしい経済
     url: https://www.neweconomy.jp/feed
+  - name: 金融庁
+    url: https://www.fsa.go.jp/common/conference/danwa/rss20.xml
 
 # ステーブルコイン界隈の注目アカウント (X/Twitter)
 twitter_accounts:
